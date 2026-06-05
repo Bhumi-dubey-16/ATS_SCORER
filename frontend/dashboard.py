@@ -17,6 +17,8 @@ st.set_page_config(
 init_db()
 
 
+
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
