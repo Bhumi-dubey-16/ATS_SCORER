@@ -3,5 +3,8 @@ groq
 PyPDF2
 python-docx
 sqlalchemy
-python-dotenv
+psycopg2-binary
 plotly
+python-dotenv
+bcrypt
+pandas

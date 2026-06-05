@@ -1,9 +1,9 @@
 import os
+import json
 from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
-
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def score_resume(resume_text, job_description):
@@ -18,16 +18,12 @@ def score_resume(resume_text, job_description):
         "suggestions": [<exactly 3 specific improvement suggestions>],
         "summary": "<2 sentence overall assessment>"
     }}
-
     RESUME:
     {resume_text}
-
     JOB DESCRIPTION:
     {job_description}
-
     Respond with JSON only. No explanation, no markdown, no extra text.
     """
-
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
@@ -35,4 +31,23 @@ def score_resume(resume_text, job_description):
         timeout=30
     )
 
-    return response.choices[0].message.content
+    raw = response.choices[0].message.content.strip()
+
+    # Strip markdown code fences if model wraps in ```json ... ```
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Safe fallback so the app never crashes
+        return {
+            "score": 0,
+            "matching_skills": [],
+            "missing_keywords": [],
+            "suggestions": ["Could not parse response. Please try again."],
+            "summary": raw  # show raw response so you can debug
+        }
